@@ -71,7 +71,8 @@ class DishWasherTest {
         when(dirtFilter.capacity()).thenReturn(MAXIMAL_FILTER_CAPACITY + 1d);
         RunResult actual = dishWasher.start(unrelevantProgramConfiguration);
         RunResult expected = RunResult.builder()
-                                      .withRunMinutes(unrelevantProgramConfiguration.getProgram().getTimeInMinutes())
+                                      .withRunMinutes(unrelevantProgramConfiguration.getProgram()
+                                                                                    .getTimeInMinutes())
                                       .withStatus(SUCCESS)
                                       .build();
 
@@ -81,7 +82,8 @@ class DishWasherTest {
     @Test
     public void engineExceptionShouldReturnRunResultWithErrorProgramStatus() throws EngineException {
         when(dirtFilter.capacity()).thenReturn(MAXIMAL_FILTER_CAPACITY + 1d);
-        doThrow(EngineException.class).when(engine).runProgram(any(WashingProgram.class));
+        doThrow(EngineException.class).when(engine)
+                                      .runProgram(any(WashingProgram.class));
 
         RunResult actual = dishWasher.start(unrelevantProgramConfiguration);
         RunResult expected = RunResult.builder()
@@ -94,7 +96,8 @@ class DishWasherTest {
     @Test
     public void waterPumpExceptionShouldReturnRunResultWithErrorPompStatus() throws PumpException {
         when(dirtFilter.capacity()).thenReturn(MAXIMAL_FILTER_CAPACITY + 1d);
-        doThrow(PumpException.class).when(waterPump).drain();
+        doThrow(PumpException.class).when(waterPump)
+                                    .drain();
 
         RunResult actual = dishWasher.start(unrelevantProgramConfiguration);
         RunResult expected = RunResult.builder()
@@ -115,14 +118,20 @@ class DishWasherTest {
         dishWasher.start(unrelevantProgramConfiguration);
 
         //First program
-        callingOrder.verify(waterPump).pour(unrelevantProgramConfiguration.getFillLevel());
-        callingOrder.verify(engine).runProgram(unrelevantProgramConfiguration.getProgram());
-        callingOrder.verify(waterPump).drain();
+        callingOrder.verify(waterPump)
+                    .pour(unrelevantProgramConfiguration.getFillLevel());
+        callingOrder.verify(engine)
+                    .runProgram(unrelevantProgramConfiguration.getProgram());
+        callingOrder.verify(waterPump)
+                    .drain();
 
         //Rinsing program
-        callingOrder.verify(waterPump).pour(unrelevantProgramConfiguration.getFillLevel());
-        callingOrder.verify(engine).runProgram(WashingProgram.RINSE);
-        callingOrder.verify(waterPump).drain();
+        callingOrder.verify(waterPump)
+                    .pour(unrelevantProgramConfiguration.getFillLevel());
+        callingOrder.verify(engine)
+                    .runProgram(WashingProgram.RINSE);
+        callingOrder.verify(waterPump)
+                    .drain();
     }
 
     @Test
@@ -132,8 +141,10 @@ class DishWasherTest {
 
         dishWasher.start(unrelevantProgramConfiguration);
 
-        callingOrder.verify(door).closed();
-        callingOrder.verify(door).lock();
+        callingOrder.verify(door)
+                    .closed();
+        callingOrder.verify(door)
+                    .lock();
     }
 
     @Test
@@ -142,5 +153,17 @@ class DishWasherTest {
 
         dishWasher.start(unrelevantProgramConfiguration);
         verify(dirtFilter).capacity();
+    }
+
+    @Test
+    public void washingShouldNotCallDirtFilterCapacityMethodIfWashingTabletsAreNotUsed() {
+        ProgramConfiguration programConfigurationWithNoTablets = ProgramConfiguration.builder()
+                                                                                     .withProgram(WashingProgram.ECO)
+                                                                                     .withFillLevel(FillLevel.HALF)
+                                                                                     .withTabletsUsed(false)
+                                                                                     .build();
+
+        dishWasher.start(programConfigurationWithNoTablets);
+        verify(dirtFilter, never()).capacity();
     }
 }
