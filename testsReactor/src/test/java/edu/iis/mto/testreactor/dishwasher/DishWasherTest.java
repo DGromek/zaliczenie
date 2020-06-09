@@ -64,4 +64,17 @@ class DishWasherTest {
         MatcherAssert.assertThat(expected, samePropertyValuesAs(actual));
     }
 
+    @Test
+    public void properWashingShouldReturnRunResultWithSuccessStatus() {
+        when(door.closed()).thenReturn(true);
+        when(dirtFilter.capacity()).thenReturn(MAXIMAL_FILTER_CAPACITY + 1d);
+
+        RunResult actual = dishWasher.start(unrelevantProgramConfiguration);
+        RunResult expected = RunResult.builder()
+                                      .withRunMinutes(unrelevantProgramConfiguration.getProgram().getTimeInMinutes())
+                                      .withStatus(SUCCESS)
+                                      .build();
+
+        MatcherAssert.assertThat(expected, samePropertyValuesAs(actual));
+    }
 }
