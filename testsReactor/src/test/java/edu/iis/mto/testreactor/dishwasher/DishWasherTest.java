@@ -8,6 +8,7 @@ import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -15,8 +16,7 @@ import static edu.iis.mto.testreactor.dishwasher.DishWasher.MAXIMAL_FILTER_CAPAC
 import static edu.iis.mto.testreactor.dishwasher.Status.*;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DishWasherTest {
@@ -108,5 +108,28 @@ class DishWasherTest {
                                       .build();
 
         MatcherAssert.assertThat(expected, samePropertyValuesAs(actual));
+    }
+
+    //Behaviour tests
+
+    @Test
+    public void washingWithOtherProgramThanRinseShouldCallEngineAndWaterPumpMethodsTwiceInCorrectOrder()
+            throws PumpException, EngineException {
+        when(door.closed()).thenReturn(true);
+        when(dirtFilter.capacity()).thenReturn(MAXIMAL_FILTER_CAPACITY + 1d);
+
+        InOrder callingOrder = inOrder(waterPump, engine);
+
+        dishWasher.start(unrelevantProgramConfiguration);
+
+        //First program
+        callingOrder.verify(waterPump).pour(unrelevantProgramConfiguration.getFillLevel());
+        callingOrder.verify(engine).runProgram(unrelevantProgramConfiguration.getProgram());
+        callingOrder.verify(waterPump).drain();
+
+        //Rinsing program
+        callingOrder.verify(waterPump).pour(unrelevantProgramConfiguration.getFillLevel());
+        callingOrder.verify(engine).runProgram(WashingProgram.RINSE);
+        callingOrder.verify(waterPump).drain();
     }
 }
