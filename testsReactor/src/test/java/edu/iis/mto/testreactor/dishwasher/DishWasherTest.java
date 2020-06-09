@@ -40,13 +40,13 @@ class DishWasherTest {
                                                              .withFillLevel(FillLevel.HALF)
                                                              .withTabletsUsed(true)
                                                              .build();
+        when(door.closed()).thenReturn(true);
     }
 
     //State tests
     @Test
     public void washingWithOpenedDoorShouldReturnRunResultWithDoorOpen() {
         when(door.closed()).thenReturn(false);
-
         RunResult actual = dishWasher.start(unrelevantProgramConfiguration);
         RunResult expected = RunResult.builder()
                                       .withStatus(DOOR_OPEN)
@@ -57,9 +57,7 @@ class DishWasherTest {
 
     @Test
     public void washingWithDirtFilterCapacityAboveMaxShouldReturnRunResultWithErrorFilterStatus() {
-        when(door.closed()).thenReturn(true);
         when(dirtFilter.capacity()).thenReturn(MAXIMAL_FILTER_CAPACITY - 1d);
-
         RunResult actual = dishWasher.start(unrelevantProgramConfiguration);
         RunResult expected = RunResult.builder()
                                       .withStatus(ERROR_FILTER)
@@ -70,9 +68,7 @@ class DishWasherTest {
 
     @Test
     public void properWashingShouldReturnRunResultWithSuccessStatus() {
-        when(door.closed()).thenReturn(true);
         when(dirtFilter.capacity()).thenReturn(MAXIMAL_FILTER_CAPACITY + 1d);
-
         RunResult actual = dishWasher.start(unrelevantProgramConfiguration);
         RunResult expected = RunResult.builder()
                                       .withRunMinutes(unrelevantProgramConfiguration.getProgram().getTimeInMinutes())
@@ -84,7 +80,6 @@ class DishWasherTest {
 
     @Test
     public void engineExceptionShouldReturnRunResultWithErrorProgramStatus() throws EngineException {
-        when(door.closed()).thenReturn(true);
         when(dirtFilter.capacity()).thenReturn(MAXIMAL_FILTER_CAPACITY + 1d);
         doThrow(EngineException.class).when(engine).runProgram(any(WashingProgram.class));
 
@@ -98,7 +93,6 @@ class DishWasherTest {
 
     @Test
     public void waterPumpExceptionShouldReturnRunResultWithErrorPompStatus() throws PumpException {
-        when(door.closed()).thenReturn(true);
         when(dirtFilter.capacity()).thenReturn(MAXIMAL_FILTER_CAPACITY + 1d);
         doThrow(PumpException.class).when(waterPump).drain();
 
@@ -115,9 +109,7 @@ class DishWasherTest {
     @Test
     public void washingWithOtherProgramThanRinseShouldCallEngineAndWaterPumpMethodsTwiceInCorrectOrder()
             throws PumpException, EngineException {
-        when(door.closed()).thenReturn(true);
         when(dirtFilter.capacity()).thenReturn(MAXIMAL_FILTER_CAPACITY + 1d);
-
         InOrder callingOrder = inOrder(waterPump, engine);
 
         dishWasher.start(unrelevantProgramConfiguration);
@@ -135,9 +127,7 @@ class DishWasherTest {
 
     @Test
     public void washingShouldCallDoorMethods() {
-        when(door.closed()).thenReturn(true);
         when(dirtFilter.capacity()).thenReturn(MAXIMAL_FILTER_CAPACITY + 1d);
-
         InOrder callingOrder = inOrder(door);
 
         dishWasher.start(unrelevantProgramConfiguration);
