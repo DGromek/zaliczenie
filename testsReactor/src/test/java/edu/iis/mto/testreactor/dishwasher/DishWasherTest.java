@@ -132,4 +132,17 @@ class DishWasherTest {
         callingOrder.verify(engine).runProgram(WashingProgram.RINSE);
         callingOrder.verify(waterPump).drain();
     }
+
+    @Test
+    public void washingShouldCallDoorMethods() {
+        when(door.closed()).thenReturn(true);
+        when(dirtFilter.capacity()).thenReturn(MAXIMAL_FILTER_CAPACITY + 1d);
+
+        InOrder callingOrder = inOrder(door);
+
+        dishWasher.start(unrelevantProgramConfiguration);
+
+        callingOrder.verify(door).closed();
+        callingOrder.verify(door).lock();
+    }
 }
