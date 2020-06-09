@@ -135,4 +135,12 @@ class DishWasherTest {
         callingOrder.verify(door).closed();
         callingOrder.verify(door).lock();
     }
+
+    @Test
+    public void washingShouldCallDirtFilterCapacityMethodIfWashingTabletsAreUsed() {
+        when(dirtFilter.capacity()).thenReturn(MAXIMAL_FILTER_CAPACITY + 1d);
+
+        dishWasher.start(unrelevantProgramConfiguration);
+        verify(dirtFilter).capacity();
+    }
 }
